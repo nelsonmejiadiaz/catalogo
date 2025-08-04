@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Catálogo de Productos</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      text-align: center;
+      padding: 1rem;
+    }
+    .catalogo {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      padding: 1rem;
+      max-width: 1200px;
+      margin: auto;
+    }
+    .producto {
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+    }
+    .producto img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+    .info {
+      padding: 1rem;
+    }
+    .info h2 {
+      font-size: 1.2rem;
+      margin: 0 0 0.5rem;
+    }
+    .info p {
+      margin: 0.2rem 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Catálogo de Productos</h1>
+  <div class="catalogo" id="catalogo"></div>
+
+  <script>
+    const sheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSmtI7iEXCIFemJTP-XpD-ZGm0V6KaPMADpr2VjPOMBa2kCnKKM2ZFbK_yDDo_pV_HJvfsH03z-lRIe/pub?output=csv';
+
+    fetch(sheetURL)
+      .then(res => res.text())
+      .then(csv => {
+        const rows = csv.split('\\n').slice(1); // omitir encabezado
+        const productos = rows.map(row => {
+          const cols = row.split(',');
+          return {
+            nombre: cols[0],
+            imagen: cols[1],
+            precio: cols[2],
+            categoria: cols[3],
+            descripcion: cols[4]
+          };
+        });
+
+        const contenedor = document.getElementById('catalogo');
+        productos.forEach(prod => {
+          if (!prod.nombre || !prod.imagen) return;
+          const div = document.createElement('div');
+          div.className = 'producto';
+          div.innerHTML = `
+            <img src="${prod.imagen}" alt="${prod.nombre}" onerror="this.src='https://via.placeholder.com/300x200?text=Sin+Imagen'">
+            <div class="info">
+              <h2>${prod.nombre}</h2>
+              <p><strong>Precio:</strong> ${prod.precio}</p>
+              <p><strong>Categoría:</strong> ${prod.categoria}</p>
+              <p>${prod.descripcion}</p>
+            </div>
+          `;
+          contenedor.appendChild(div);
+        });
+      })
+      .catch(error => {
+        document.getElementById('catalogo').innerHTML = '<p>Error al cargar los productos.</p>';
+        console.error(error);
+      });
+  </script>
+</body>
+</html>
